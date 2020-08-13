@@ -12,9 +12,15 @@ def getPage(myword:str):
     '''
     basurl='http://dict.cn/'
     searchurl=basurl+myword
-    response =  urllib.request.urlopen(searchurl)
-    html = response.read()
-    return html
+    try:
+        response =  urllib.request.urlopen(searchurl)
+        html = response.read()
+        return html
+    except:
+        print("{} is a error words,the html repsonse it is invail".format(myword))
+        with open("./errorWords.txt",'a+',encoding="utf-8") as f:
+            f.write(myword+";{} is a error words,the html repsonse it is invail".format(myword)+"\n")
+        return False
 
 def get_wordmeaning(html_selector:str):
     '''
@@ -58,7 +64,7 @@ def get_sentence(html_selector:str):
     else:
         return ''
 
-def get_phonetic_pronunciation(html_selector:str):
+def get_phonetic_pronunciation(html_selector:str,myword:str):
     """
 
     :param html_selector:
@@ -82,7 +88,9 @@ def get_phonetic_pronunciation(html_selector:str):
         # return phonetic, pronunciation  # 返回音标、读音
         return phonetic  # 返回读音(不需要音标)
     else:
-        return " "
+        with open("./errorWords.txt","a+",encoding="utf-8") as f:
+            f.write(myword+";{} has not phonetic".format(myword)+"\n")
+        return ""
 
 def get_explain(html_selector:str):
     explain={}
@@ -102,9 +110,7 @@ def get_explain(html_selector:str):
     else:
         return " "
 
-def get_word(word:str):
-    #获得页面
-    pagehtml=getPage(word)
+def get_word(pagehtml:str,myword:str):
     attribute = []
     explain = []
     word = []
@@ -114,11 +120,11 @@ def get_word(word:str):
     #单词释义
     explain = get_explain(pagehtml)
     #单词音标及读音
-    phonetic = get_phonetic_pronunciation(pagehtml)
+    phonetic = get_phonetic_pronunciation(pagehtml,myword)
     #单词例句
     sentences = get_sentence(pagehtml)
 
-    if len(explain)>0:
+    if len(explain)>0 and phonetic !="" :
         explain.update(phonetic)
         explain.update(sentences)
         return explain
@@ -132,9 +138,11 @@ if __name__ == '__main__':
             wordlist.append(word)
     for word in wordlist:
         print(word)
+        #获得页面
         result=word.replace('\n','')
-        if get_word(word) != '':
-            for key,items in get_word(word).items():
+        pagehtml=getPage(result)
+        if pagehtml and get_word(pagehtml,result) != '':
+            for key,items in get_word(pagehtml,result).items():
                 result+='@'+'<br>'.join(items)
             print(result)
             with open('./wordlist_导入.txt','a+',encoding='utf-8') as w:
