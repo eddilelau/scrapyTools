@@ -18,7 +18,7 @@ def getPage(myword:str):
         return html
     except:
         print("{} is a error words,the html repsonse it is invail".format(myword))
-        with open("./errorWords.txt",'a+',encoding="utf-8") as f:
+        with open("./errorWords.txt",'w+',encoding="utf-8") as f:
             f.write(myword+";{} is a error words,the html repsonse it is invail".format(myword)+"\n")
         return False
 
