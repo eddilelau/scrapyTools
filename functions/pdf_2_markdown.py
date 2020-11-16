@@ -19,7 +19,7 @@ def main(file_name):
     password = b''
     rotation = 0
     caching=0
-    dir=os.getcwd()
+    dir=os.getcwd()  #get current diretory
     fname=dir+"/{}.pdf".format(file_name)
     with open(fname, 'rb') as fp:
         rsrcmgr = PDFResourceManager(caching=caching)

@@ -1,36 +1,55 @@
+#!/usr/bin/env python
+# coding:utf-8
 from email.mime.text import MIMEText           #is used to create MIME objects of major type text.
 from email.mime.multipart import MIMEMultipart #Creating email and MIME objects from scratch
 from email.utils import formataddr            #Miscellaneous utilities
 from email.header import Header               #Internationalized headers
 import smtplib                                #The smtplib module defines an SMTP client session object that can be used to send mail to any Internet machine with an SMTP or ESMTP listener daemon.
 
-def send_mail(file_name,kind):
-    my_sender = '395407702@qq.com'  # ·¢¼şÈËÓÊÏäÕËºÅ
-    my_pass = 'fxtgbvgdvahubgec'  # ·¢¼şÈËÓÊÏäÃÜÂë
-    my_user = '395407702@qq.com'  # ÊÕ¼şÈËÓÊÏäÕËºÅ£¬ÎÒÕâ±ß·¢ËÍ¸ø×Ô¼º
-    ret = True
-    try:
-        message = MIMEMultipart()
-        message['From'] = Header("ÖªºõËÑË÷½á¹û", 'utf-8')
-        message['To'] = Header("¹¤×÷ÓÊÏä", 'utf-8')
-        subject = 'ÖªºõËÑË÷½á¹û'+'_'+str(kind)
-        message['Subject'] = Header(subject, 'utf-8')
-        message.attach( MIMEText('ÖªºõËÑË÷½á¹û'+'_'+str(kind) , 'plain', 'utf-8'))      #Add the given payload to the current payload, which must be None or a list of Message objects before the call.
+class send_mail(object):
+    def __init__(self,my_sender:str,my_pass:str,my_user:str,context:str,my_sender_alias:str,my_user_alias:str):
+        self.my_sender = my_sender   # sender email
+        self.my_sender_alias = my_sender_alias   # sender email alias
+        self.my_pass = my_pass  # å‘ä»¶äººé‚®ç®±å¯†ç 
+        self.my_user = my_user  # receiver email
+        self.my_user_alias = my_user_alias  # receiver email alias
+        self.context = context  # receiver email
+        self.message = MIMEMultipart()
 
+    def make_message(self):
+        self.message['From'] = Header(self.my_sender_alias, 'utf-8')   # alias the sender email
+        self.message['To'] = Header(self.my_user_alias, 'utf-8')      # alias the receiver email
+        subject = str(self.context)   # email tittle
+        self.message['Subject'] = Header(subject, 'utf-8')
+        self.message.attach(MIMEText( str(self.context), 'plain','utf-8'))
 
-        # ¹¹Ôì¸½¼ş1£¬´«ËÍµ±Ç°Ä¿Â¼ÏÂµÄ test.txt ÎÄ¼ş
+    def make_message_with_MIME(self,file_name:str):
+        self.message['From'] = Header(self.my_sender_alias, 'utf-8')
+        self.message['To'] = Header(self.my_user_alias, 'utf-8')
+        subject = str(self.context)
+        self.message['Subject'] = Header(subject, 'utf-8')
+        self.message.attach(MIMEText( str(self.context), 'plain','utf-8'))
+
+        # add file to MIME
         att1 = MIMEText(open('./zhihu/' + file_name, 'rb').read(), 'base64', 'utf-8')
         att1["Content-Type"] = 'application/octet-stream'
-        # ÕâÀïµÄfilename¿ÉÒÔÈÎÒâĞ´£¬Ğ´Ê²Ã´Ãû×Ö£¬ÓÊ¼şÖĞÏÔÊ¾Ê²Ã´Ãû×Ö
         att1.add_header('Content-Disposition', 'attachment', filename=('gb2312', '', file_name))
-        # att1["Content-Disposition"] = 'attachment; filename='+file_name
-        message.attach(att1)
+        self.message.attach(att1)
 
-        server = smtplib.SMTP_SSL("smtp.qq.com", 465)  # ·¢¼şÈËÓÊÏäÖĞµÄSMTP·şÎñÆ÷£¬¶Ë¿ÚÊÇ465
-        server.login(my_sender, my_pass)  # À¨ºÅÖĞ¶ÔÓ¦µÄÊÇ·¢¼şÈËÓÊÏäÕËºÅ¡¢ÓÊÏäÃÜÂë
-        server.sendmail(my_sender, [my_user, ], message.as_string())  # À¨ºÅÖĞ¶ÔÓ¦µÄÊÇ·¢¼şÈËÓÊÏäÕËºÅ¡¢ÊÕ¼şÈËÓÊÏäÕËºÅ¡¢·¢ËÍÓÊ¼ş
-        server.quit()  # ¹Ø±ÕÁ¬½Ó
-        print('ÓÊ¼ş·¢ËÍ³É¹¦')
-    except Exception as ex:  # Èç¹û try ÖĞµÄÓï¾äÃ»ÓĞÖ´ĞĞ£¬Ôò»áÖ´ĞĞÏÂÃæµÄ ret=False
-        print(ex)
-        return False
+    def send_mail(self):
+        server = smtplib.SMTP_SSL("smtp.qq.com", 465)  # å‘ä»¶äººé‚®ç®±ä¸­çš„SMTPæœåŠ¡å™¨ï¼Œç«¯å£æ˜¯465
+        server.login(self.my_sender, self.my_pass)  # fill password and account
+        server.sendmail(self.my_sender, [self.my_user, ], self.message.as_string())  # senderã€receiverã€content
+        return True
+
+
+if __name__ == '__main__':
+    my_sender = '395407702@qq.com'  # å‘ä»¶äººé‚®ç®±è´¦å·
+    my_sender_alias = 'my_sender_alias'  # å‘ä»¶äººé‚®ç®±åˆ«å
+    my_pass = 'frrxawwuwmzybghg'  # å‘ä»¶äººé‚®ç®±å¯†ç 
+    my_user = '395407702@qq.com'  # æ”¶ä»¶äººé‚®ç®±è´¦å·ï¼Œæˆ‘è¿™è¾¹å‘é€ç»™è‡ªå·±
+    my_user_alias = 'my_user_alias'  # æ”¶ä»¶äººé‚®ç®±è´¦å·åˆ«å
+    context = 'test'
+    sd=send_mail(my_sender,my_pass,my_user,context,my_sender_alias=my_sender_alias,my_user_alias=my_user_alias)
+    sd.make_message()
+    sd.send_mail()

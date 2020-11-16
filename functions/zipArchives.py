@@ -1,3 +1,5 @@
+# ---coding:utf-8
+import os
 import zipfile
 
 def make_zip(source_dir, output_filename):
@@ -6,6 +8,6 @@ def make_zip(source_dir, output_filename):
     for parent, dirnames, filenames in os.walk(source_dir):
         for filename in filenames:
             pathfile = os.path.join(parent, filename)
-            arcname = pathfile[pre_len:].strip(os.path.sep)  # Ïà¶ÔÂ·¾¶
+            arcname = pathfile[pre_len:].strip(os.path.sep)  # ç›¸å¯¹è·¯å¾„
             zipf.write(pathfile, arcname)
     zipf.close()
