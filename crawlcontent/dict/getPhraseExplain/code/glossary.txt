@@ -1,6 +1,0 @@
-shuffle
-corpus
-carriage
-bracket
-compressor
-subscriptable
